@@ -1,4 +1,6 @@
-export const carouselStyles = `
+import { CarouselStyles, CarouselError } from './types';
+
+export const carouselStyles: CarouselStyles['carouselStyles'] = `
     .nk-carousel-inner {
         display: flex;
         transition: transform 0.5s ease;
@@ -22,7 +24,15 @@ export const carouselStyles = `
 `;
 
 export function initializeStyles(): void {
-    const style = document.createElement('style');
-    style.textContent = carouselStyles;
-    document.head.appendChild(style);
+    try {
+        const style = document.createElement('style');
+        style.textContent = carouselStyles;
+        document.head.appendChild(style);
+    } catch (error) {
+        const carouselError: CarouselError = {
+            type: 'INITIALIZATION_ERROR',
+            message: 'Failed to initialize carousel styles'
+        };
+        console.error(carouselError);
+    }
 }

@@ -5,13 +5,15 @@ export class Carousel {
     currentIndex;
     autoplayInterval;
     options;
+    animationState;
     constructor(element) {
         this.element = element;
         this.inner = element.querySelector('.nk-carousel-inner');
-        this.slides = Array.prototype.slice.call(this.inner.children);
+        this.slides = Array.from(this.inner.children);
         this.currentIndex = 0;
         this.autoplayInterval = null;
         this.options = this.parseOptions();
+        this.animationState = 'idle';
         this.setupCarousel();
         this.createNavigationDots();
         this.showSlide(0);
@@ -47,7 +49,9 @@ export class Carousel {
         this.element.appendChild(dotsContainer);
     }
     showSlide(index) {
+        const previousIndex = this.currentIndex;
         this.currentIndex = index;
+        this.animationState = 'sliding';
         const offset = -index * (100 / this.options.slidesToShow);
         this.inner.style.transform = `translateX(${offset}%)`;
         if (this.options.dots) {
@@ -56,8 +60,22 @@ export class Carousel {
                 dot.classList.toggle('active', i === index);
             });
         }
+        // Create and dispatch the custom event
+        const slideChangeEvent = new CustomEvent('slideChange', {
+            bubbles: true,
+            detail: {
+                previousIndex,
+                currentIndex: index
+            }
+        });
+        this.element.dispatchEvent(slideChangeEvent);
+        setTimeout(() => {
+            this.animationState = 'idle';
+        }, 500); // Match transition duration from CSS
     }
     nextSlide() {
+        if (this.animationState === 'sliding')
+            return;
         let nextIndex = (this.currentIndex + 1) % this.slides.length;
         this.showSlide(nextIndex);
     }
@@ -65,10 +83,21 @@ export class Carousel {
         this.autoplayInterval = window.setInterval(() => {
             this.nextSlide();
         }, this.options.autoplay);
+        // Create and dispatch the autoplay start event
+        const autoplayStartEvent = new CustomEvent('autoplayStart', {
+            bubbles: true
+        });
+        this.element.dispatchEvent(autoplayStartEvent);
     }
     stopAutoplay() {
         if (this.autoplayInterval) {
             clearInterval(this.autoplayInterval);
+            this.autoplayInterval = null;
+            // Create and dispatch the autoplay stop event
+            const autoplayStopEvent = new CustomEvent('autoplayStop', {
+                bubbles: true
+            });
+            this.element.dispatchEvent(autoplayStopEvent);
         }
     }
 }

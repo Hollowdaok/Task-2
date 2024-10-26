@@ -21,7 +21,16 @@ export const carouselStyles = `
     }
 `;
 export function initializeStyles() {
-    const style = document.createElement('style');
-    style.textContent = carouselStyles;
-    document.head.appendChild(style);
+    try {
+        const style = document.createElement('style');
+        style.textContent = carouselStyles;
+        document.head.appendChild(style);
+    }
+    catch (error) {
+        const carouselError = {
+            type: 'INITIALIZATION_ERROR',
+            message: 'Failed to initialize carousel styles'
+        };
+        console.error(carouselError);
+    }
 }
