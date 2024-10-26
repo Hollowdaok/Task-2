@@ -1,10 +1,10 @@
-interface CarouselOptions {
+export interface CarouselOptions {
     autoplay: number | false;
     dots: boolean;
     slidesToShow: number;
 }
 
-class Carousel {
+export class Carousel {
     private element: HTMLElement;
     private inner: HTMLElement;
     private slides: HTMLElement[];
@@ -34,7 +34,7 @@ class Carousel {
             autoplay: parseInt(this.element.dataset.autoplay || '0') || false,
             dots: this.element.dataset.dots === 'true',
             slidesToShow: this.element.classList.contains('nk-carousel-x4') ? 4 : 
-                          this.element.classList.contains('nk-carousel-x2') ? 2 : 1
+                         this.element.classList.contains('nk-carousel-x2') ? 2 : 1
         };
     }
 
@@ -89,64 +89,3 @@ class Carousel {
         }
     }
 }
-
-function initializeCarousels(): void {
-    const carousels = document.querySelectorAll('.nk-carousel, .nk-carousel-2');
-    carousels.forEach(carousel => {
-        new Carousel(carousel as HTMLElement);
-    });
-}
-
-async function fetchAndReplaceImages(): Promise<void> {
-    try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/photos');
-        
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch images');
-        }
-
-        const photos: { url: string; thumbnailUrl: string; title: string }[] = await response.json();
-
-        const imageElements: NodeListOf<HTMLImageElement> = document.querySelectorAll('img');
-        imageElements.forEach((img: HTMLImageElement, index: number) => {
-            const photo = photos[index % photos.length]; 
-            img.src = photo.url; 
-            img.alt = photo.title; 
-        });
-    } catch (error) {
-        console.error("Error fetching or replacing images:", error);
-    }
-}
-
-(function() {
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeCarousels();
-        fetchAndReplaceImages();
-    });
-
-    const style = document.createElement('style');
-    style.textContent = `
-        .nk-carousel-inner {
-            display: flex;
-            transition: transform 0.5s ease;
-        }
-        .carousel-dots {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        .carousel-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #ccc;
-            margin: 0 5px;
-            cursor: pointer;
-        }
-        .carousel-dot.active {
-            background-color: #333;
-        }
-    `;
-    document.head.appendChild(style);
-})();
